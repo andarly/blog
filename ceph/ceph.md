@@ -1,4 +1,4 @@
-# rexray volume plugin 使用ceph做docker共享存储
+# rexray使用ceph做docker共享存储
 　　Docker Swarm使得分布式、集群的搭建部署速度提升了指数级别，原本的部署方式可能要用一天的时间，改用docker部署后可以减少到十分钟以内。  
 　　Docker swarm一般用来部署无状态应用，应用可以在任何节点上运行，以便达到横向扩展。当然，我们也可以使用docker swarm部署有状态应用，但是有个限制问题就是：有状态应用节点转移后，数据部分不能跟着转移。  
 　　Docker提供的解决方案是使用volume plugin，把数据存储到统一的地方，使得不同节点之间可以共享数据。Docker 默认存档到本地文件系统
@@ -25,7 +25,7 @@ REX-Ray	|	|支持ceph
 
 ## 技术选型
 　　经过大量搜索，国内来说，rexray、flocker、glusterfs是volume plugin推荐方案top3。通过对比[rexray+ceph](https://rexray.readthedocs.io/en/stable/user-guide/storage-providers/ceph/)的方案比较符合我们的需求。
-![Aaron Swartz](/blog/ceph/pic1.png)
+![rexray官网ceph模块图片](https://andarly.github.io/blog/ceph/pic1.png)
 
 ## Ceph
 　　包含文件存储、块存储、对象存储三个存储方式，volume plugin使用的是块存储，桥接本地文件系统的接口。其他两个可当作附加服务，在业务应用内直接使用。另外，Ceph搭建比较简单，支持docker搭建，支持分布式，支持横向拓展。
