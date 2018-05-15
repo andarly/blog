@@ -25,7 +25,7 @@ REX-Ray	|	|支持ceph
 
 ## 技术选型
 　　经过大量搜索，国内来说，rexray、flocker、glusterfs是volume plugin推荐方案top3。通过对比[rexray+ceph](https://rexray.readthedocs.io/en/stable/user-guide/storage-providers/ceph/)的方案比较符合我们的需求。
-![Aaron Swartz](pic1.png)
+![Aaron Swartz](/blog/ceph/pic1.png)
 
 ## Ceph
 　　包含文件存储、块存储、对象存储三个存储方式，volume plugin使用的是块存储，桥接本地文件系统的接口。其他两个可当作附加服务，在业务应用内直接使用。另外，Ceph搭建比较简单，支持docker搭建，支持分布式，支持横向拓展。
