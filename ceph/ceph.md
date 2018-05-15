@@ -26,4 +26,4 @@ https://rexray.readthedocs.io/en/stable/user-guide/storage-providers/ceph/
 ###Rexray
 国内来说，rexray、flocker、glusterfs是volume plugin最优方案top3。
 
-![Aaron Swartz](图片1.png)
+![Aaron Swartz](pic1.png)
