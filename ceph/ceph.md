@@ -136,8 +136,7 @@ ceph:`ceph -s`
 ### 测试统一存储
 有两个方式创建数据卷、启动容器：  
 1.自动  
-`docker run --volume-driver 10.32.3.112:5011/rexray/rbd -v test:/test -it --rm busybox sh`
-
+`docker run --volume-driver 10.32.3.112:5011/rexray/rbd -v test:/test -it --rm busybox sh`  
 2.手动  
 `docker volume create -d  10.32.3.112:5011/rexray/rbd test`
 `docker run -v test:/test -it --rm busybox sh`
@@ -160,5 +159,5 @@ ceph:`ceph -s`
 ### 你需要学ansible
 * 当你的集群包含5台以上的机器时，为了把ceph的配置文件copy到五台docker机上，你可能需要花1分钟。当你的集群包含20台以上时你觉得只需要花4分钟。但是，你确定你不会遗漏？
 * ceph-common、rexray/rbd等包都需要手动安装，安装的时候还非常依赖网速，当你知道ansible可以并行控制n台机器，你会毫不犹豫的点开[这里](http://www.ansible.com.cn/)。
-##遗留问题
+## 遗留问题
 　　一个数据卷被多个节点使用过，只要在一个节点删除，ceph上也就同时删除，但是其他节点还保留着对这个数据卷的映射，导致无法重新创建删除的数据卷，除非手动删除映射关系或者修改数据集名称。
