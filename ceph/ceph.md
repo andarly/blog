@@ -8,7 +8,6 @@
 ## 技术选型
 
 *官方插件列表*  
-　　在查看完官方[所有的可用方案](https://docs.docker.com/engine/extend/legacy_plugins/#volume-plugins)后，并没有马上得到一个可行易用的方案：
 
 插件|	缺点	|优点
 - | :-: | -: 
@@ -23,16 +22,18 @@ GlusterFS	|无法docker部署	|官方文档好
 Horcrux	|无法成功搭建，文档支持差	|Minio还是比较好搭建的
 REX-Ray	|	|
 
-　　经过大量搜索，国内来说，rexray、flocker、glusterfs是volume plugin推荐方案top3。通过对比,[rexray+ceph](https://rexray.readthedocs.io/en/stable/user-guide/storage-providers/ceph/)的方案比较符合我们的需求。
+　　在查看、对比完官方[所有的可用方案](https://docs.docker.com/engine/extend/legacy_plugins/#volume-plugins)后，并没有马上得到一个可行易用的方案：
+　　经过大量搜索，国内来说，rexray、flocker、glusterfs是volume plugin推荐方案top3。通过进一步对比,并且发现rexray支持ceph后,认为[rexray+ceph](https://rexray.readthedocs.io/en/stable/user-guide/storage-providers/ceph/)的方案比较符合我们的需求。
 
 ## Ceph简介
 　　[ceph](http://docs.ceph.org.cn/)包含文件存储、块存储、对象存储三种存储服务，rexray/rbd使用的是块存储，使用该插件之后，原本存储到本地文件的方式变成存储到ceph服务中。另外两个可当作附加服务，在业务应用内直接使用。另外，Ceph搭建比较简单，支持docker搭建，支持分布式，支持横向拓展（添加硬件后启动osd服务加入ceph集群即可）。  
-　　Ceph官方只有k8s上的搭建教程，但是docker store上有ceph的镜像，上面有比较详细的搭建说明。虽然玩不转k8s，但是有了容器镜像的使用说明，把它部署成swarm mode是轻而易举的事情。[该镜像](https://store.docker.com/community/images/ceph/daemon)集成多个组件的镜像，通过启动命令参数，指定组件的类型。另外有针对不同组件的独立镜像。
+　　Ceph官方只有k8s上的搭建教程，但是docker store上有[ceph的镜像](https://store.docker.com/community/images/ceph/daemon)，上面有比较详细的搭建说明。虽然玩不转k8s，但是有了容器镜像的使用说明，把它部署成swarm mode是轻而易举的事情。该镜像集成多个组件的镜像，通过启动命令参数，指定组件的类型。另外有针对不同组件的独立镜像。
 ## 搭建环境
 三个docker节点。标记为
 - B1(10.32.3.147)
 - B2(10.32.3.148)
 - B3(10.32.3.149)
+
 ## Ceph搭建
 - 启动mon
 - 启动mgr
@@ -79,6 +80,7 @@ osd是ceph中接受，存储数据的服务。
 -v /var/lib/ceph:/var/lib/ceph \
 ceph/daemon osd`
 * osd可以通常部署多个，但是一个docker节点只能有一个osd服务。在swarm环境下，为了最大化硬盘的使用，可以在所有节点上都启动osd服务。
+
 ### 查看ceph状态
 进入mon容器，执行ceph -s查看服务状态。快速命令
 ```
@@ -88,6 +90,7 @@ docker exec ${mon_container_id} ceph -s
 health HEALTH_OK  
 pgmap  active+clean  
 表示集群可用
+
 ### 快速启动demo
 基于ceph的搭建比较繁杂，如果想测试rexray/ceph插件的可用性，可以使用以下命令启动一个包含所有服务的容器。   
 ``
@@ -132,7 +135,7 @@ ceph:`ceph -s`
 2.存储到私库`docker push 10.32.3.112:5011/rexray/rbd`
 ### 测试统一存储
 有两个方式创建数据卷、启动容器：  
-1.自动
+1.自动  
 `docker run --volume-driver 10.32.3.112:5011/rexray/rbd -v test:/test -it --rm busybox sh`
 
 2.手动  
