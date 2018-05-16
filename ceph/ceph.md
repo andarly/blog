@@ -1,13 +1,11 @@
-# <center>rexray使用ceph做docker共享存储</center>
+# <center>docker使用rexray基于ceph做共享存储</center>
 　　Docker Swarm使得分布式、集群的搭建部署速度提升了指数级别，原本的部署方式可能要用一天的时间，改用docker部署后可以减少到十分钟以内。  
-　　Docker swarm一般用来部署无状态应用，应用可以在任何节点上运行，以便达到横向扩展。当然，我们也可以使用docker swarm部署有状态应用，但是有个限制问题就是：有状态应用节点转移后，数据部分不能跟着转移。  
-　　Docker提供的解决方案是使用volume plugin，把数据存储到统一的地方，使得不同节点之间可以共享数据。Docker 默认存档到本地文件系统
+　　Docker swarm一般用来部署无状态应用，应用可以在任何节点上运行，以便达到横向扩展。当然，我们也可以使用docker swarm部署有状态应用，但是有个限制问题就是：Docker 默认存档到本地文件系统，有状态应用节点转移后，数据部分不能跟着转移。  
+　　Docker提供的解决方案是使用volume plugin，把数据存储到统一的地方，使得不同节点之间可以共享数据。
 
-## 官方解决
+## 官方插件列表
 
-　　在查看完官方[所有的可用方案](https://docs.docker.com/engine/extend/legacy_plugins/#finding-a-plugin)后，并没有马上得到一个可行易用的方案：
-
- 
+　　在查看完官方[所有的可用方案](https://docs.docker.com/engine/extend/legacy_plugins/#volume-plugins)后，并没有马上得到一个可行易用的方案：
 
 插件|	缺点	|优点
 - | :-: | -: 
@@ -31,7 +29,19 @@ REX-Ray	|	|支持ceph
 　　包含文件存储、块存储、对象存储三个存储方式，volume plugin使用的是块存储，桥接本地文件系统的接口。其他两个可当作附加服务，在业务应用内直接使用。另外，Ceph搭建比较简单，支持docker搭建，支持分布式，支持横向拓展。
 ### Ceph搭建
 　　Ceph官方只有k8s上的搭建教程，但是docker store上有ceph的镜像，上面有比较详细的搭建说明。经测试，可以直接使用。[该镜像](https://store.docker.com/community/images/ceph/daemon)集成多个组件的镜像，通过启动命令参数，指定组件的类型。另外有针对不同组件的独立镜像。
-### 部署失败恢复状态
+###步骤
+- ceph搭建
+    - <a href="#1">初始化mon</a>
+    - 初始化mgr
+    - 初始化osd
+    - 测试ceph
+    - ceph demo快速启动
+- docker使用ceph    
+    - 每个节点安装rbd、ceph客户端
+    - 每个swarm节点安装rexray插件
+    - 测试统一存储
+    
+### <a name="1">部署失败恢复状态</a>
 `rm -rf /etc/ceph/* && rm -rf /var/lib/ceph/ && \
 docker rm -f mon osd mgr`
 
