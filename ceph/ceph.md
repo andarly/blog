@@ -22,8 +22,7 @@ GlusterFS	|无法docker部署	|官方文档好
 Horcrux	|无法成功搭建，文档支持差	|Minio还是比较好搭建的
 REX-Ray	|	|
 
-　　在查看、对比完官方[所有的可用方案](https://docs.docker.com/engine/extend/legacy_plugins/#volume-plugins)后，并没有马上得到一个可行易用的方案：
-　　经过大量搜索，国内来说，rexray、flocker、glusterfs是volume plugin推荐方案top3。通过进一步对比,并且发现rexray支持ceph后,认为[rexray+ceph](https://rexray.readthedocs.io/en/stable/user-guide/storage-providers/ceph/)的方案比较符合我们的需求。
+　　在查看、对比完官方[所有的可用方案](https://docs.docker.com/engine/extend/legacy_plugins/#volume-plugins)后，并没有马上得到一个可行易用的方案。经过大量搜索，国内来说，rexray、flocker、glusterfs是volume plugin推荐方案top3。通过进一步对比,并且发现rexray支持ceph后,认为[rexray+ceph](https://rexray.readthedocs.io/en/stable/user-guide/storage-providers/ceph/)的方案比较符合我们的需求。
 
 ## Ceph简介
 　　[ceph](http://docs.ceph.org.cn/)包含文件存储、块存储、对象存储三种存储服务，rexray/rbd使用的是块存储，使用该插件之后，原本存储到本地文件的方式变成存储到ceph服务中。另外两个可当作附加服务，在业务应用内直接使用。另外，Ceph搭建比较简单，支持docker搭建，支持分布式，支持横向拓展（添加硬件后启动osd服务加入ceph集群即可）。  
