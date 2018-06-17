@@ -1,0 +1,201 @@
+	
+重装	
+rm -rf /etc/ceph/* && rm -rf /var/lib/ceph/ && \
+docker rm -f mon osd mgr	
+	
+	
+初始化	
+docker run -d --net=host  --name=mon \
+-v /etc/ceph:/etc/ceph \
+-v /var/lib/ceph/:/var/lib/ceph \
+-e MON_IP=10.32.3.147 \
+-e CEPH_PUBLIC_NETWORK=10.32.3.0/24 \
+ceph/daemon mon && \
+docker run -d --net=host --name=mgr \
+-v /etc/ceph:/etc/ceph \
+-v /var/lib/ceph/:/var/lib/ceph/ \
+ceph/daemon mgr && \
+sudo docker run -d --net=host --name=osd \
+--privileged=true \
+-v /etc/ceph:/etc/ceph \
+-v /var/lib/ceph:/var/lib/ceph \
+ceph/daemon osd
+
+
+docker run -d --net=host --name=ceph \
+-v /etc/ceph:/etc/ceph \
+-v /var/lib/ceph/:/var/lib/ceph \
+-e MON_IP=10.32.3.147 \
+-e CEPH_PUBLIC_NETWORK=10.32.3.0/24 \
+ceph/demo
+
+安装osd
+scp -r  root@10.32.3.147:/etc/ceph/* /etc/ceph/ && \
+scp -r root@10.32.3.147:/var/lib/ceph/bootstrap*   /var/lib/ceph/
+
+sudo docker run -d --net=host --name=osd \
+--privileged=true \
+-v /etc/ceph:/etc/ceph \
+-v /var/lib/ceph:/var/lib/ceph \
+ceph/daemon osd
+
+
+
+测试	
+
+osd crush chooseleaf type = 0
+osd journal size = 100
+osd pool default pg num = 8
+osd pool default pgp num = 8
+osd pool default size = 1
+
+
+docker volume create -d  10.32.3.112:5011/rexray/rbd test
+
+考配置   下插件   装ceph-common  装rexray
+export REXRAY_SERVICE=rbd && \
+rexray service start
+ 
+curl -sSL https://rexray.io/install | sh -
+
+docker plugin install 10.32.3.112:5011/rexray/rbd --grant-all-permissions
+docker run --volume-driver 10.32.3.112:5011/rexray/rbd -v test:/test -it --rm busybox sh
+
+
+sudo docker run -d --net=host --name=osd1 \
+--privileged=true \
+-v /etc/ceph:/etc/ceph \
+-v /var/lib/ceph/osd/ceph-1:/var/lib/ceph/osd/ceph-1 \
+ceph/daemon osd
+
+
+
+
+
+每个节点
+
+sudo useradd -d /home/cephdev -m cephdev && \
+sudo passwd cephdev && \
+echo "cephdev ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/cephdev && \
+sudo chmod 0440 /etc/sudoers.d/cephdev
+
+主节点
+ssh-keygen
+vi ~/.ssh/config
+Host hong
+   Hostname hong
+   User cephdev
+Host hong01
+   Hostname hong01
+   User cephdev
+Host hong02
+   Hostname hong02
+   User cephdev
+Host hong03
+   Hostname hong03
+   User cephdev
+Host hong04
+   Hostname hong04
+   User cephdev
+
+   
+
+ssh hong   sudo systemctl start firewalld.service && \
+ssh hong02 sudo systemctl start firewalld.service && \
+ssh hong03 sudo systemctl start firewalld.service && \
+ systemctl start firewalld.service
+
+
+sudo firewall-cmd --zone=public --add-port=6789/tcp --permanent && \
+sudo firewall-cmd --zone=public --add-port=6800-7300/tcp --permanent && \
+
+ssh hong sudo firewall-cmd --zone=public --add-port=6789/tcp --permanent && \
+ssh hong sudo firewall-cmd --zone=public --add-port=6800-7300/tcp --permanent && \
+
+ssh hong02 sudo firewall-cmd --zone=public --add-port=6789/tcp --permanent && \
+ssh hong02 sudo firewall-cmd --zone=public --add-port=6800-7300/tcp --permanent && \
+
+ssh hong03 sudo firewall-cmd --zone=public --add-port=6789/tcp --permanent && \
+ssh hong03 sudo firewall-cmd --zone=public --add-port=6800-7300/tcp --permanent && \
+
+firewall-cmd --zone=public --add-port=6789/tcp --permanent && \
+firewall-cmd --zone=public --add-port=6800-7300/tcp --permanent && \
+firewall-cmd --reload
+
+
+
+wget https://bootstrap.pypa.io/ez_setup.py -O - | python
+
+
+sudo yum install -y yum-utils && sudo yum-config-manager --add-repo https://dl.fedoraproject.org/pub/epel/7/x86_64/ && \
+sudo yum install --nogpgcheck -y epel-release && sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7 && sudo rm /etc/yum.repos.d/dl.fedoraproject.org*
+
+scp /etc/yum.repos.d/ceph.yml
+
+
+
+
+
+
+ ceph-deploy  --overwrite-conf admin hong hong02 hong03 hong04
+ 
+ ssh hong sudo chmod +r /etc/ceph/ceph.client.admin.keyring
+
+
+ssh hong "sudo rm -rf /etc/ceph/* &&sudo rm -rf /var/lib/ceph" && /
+ssh hong02 "sudo rm -rf /etc/ceph/* &&sudo rm -rf /var/lib/ceph" && /
+ssh hong03 "sudo rm -rf /etc/ceph/* &&sudo rm -rf /var/lib/ceph" && / 
+ssh hong04 "sudo rm -rf /etc/ceph/* &&sudo rm -rf /var/lib/ceph" 
+
+[root@hong01 ~]# ls -l /var/lib/ceph/mon/
+total 0
+drwxr-xr-x 3 64045 64045 55 May  3 17:45 ceph-hong01
+[root@hong01 ~]# ls -l /var/lib/ceph/mon/ceph-hong01/
+total 8
+-rw------- 1 64045 64045 77 May  3 17:45 keyring
+-rw-r--r-- 1 64045 64045  8 May  3 17:45 kv_backend
+drwxr-xr-x 2 64045 64045 92 May  3 17:45 store.db
+
+//清理
+ansible all -a "docker container prune -f" -i testhost
+
+ansible all -a "docker plugin rm -f 10.32.3.112:5011/ceph/rbd" -i testhost
+
+//安装  没用ceph-deploy 不知道会不会出问题
+ansible all -a "yum install ceph-common -y" -i testhost
+
+// copy 密钥、配置
+ceph-deploy admin 
+
+
+//安装插件
+ansible all -a "docker plugin install --grant-all-permissions 10.32.3.112:5011/rexray/rbd" -i /root/testhost
+
+ansible all -a "rbd map test --name client.admin" -i /root/testhost
+
+
+
+
+
+ceph-deploy admin \
+10.32.8.181 \
+10.32.8.182 \
+10.32.8.183 \
+10.32.8.184 \
+10.32.8.185 \
+10.32.8.186 \
+10.32.8.187 \
+10.32.8.188 \
+10.32.8.189 \
+10.32.8.190 \
+10.32.8.191 \
+10.32.8.192 \
+10.32.8.193 \
+10.32.8.194 \
+10.32.8.195 \
+10.32.8.196 \
+10.32.8.197 \
+10.32.8.198 \
+10.32.8.199 \
+10.32.8.200 \
+
