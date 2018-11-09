@@ -24,13 +24,12 @@ RUN echo "deb $DEBIAN_URL testing main contrib non-free" >> /etc/apt/sources.lis
   && apt-get clean all
 
 RUN cd /usr/src                                                 \
-  && git clone https://github.com/neovim/neovim.git             \
-  && cd neovim                                                  \
+  && git clone https://github.com/neovim/neovim.git             
+RUN cd /usr/src/neovim                                          
   && make CMAKE_BUILD_TYPE=RelWithDebInfo                       \
-          CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=/usr/local" \
-  && make install                                               \
-  && rm -r /usr/src/neovim
-
+          CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=/usr/local" 
+RUN cd /usr/src/neovim  										\
+&& make install                                               
 ENV HOME /home/spacevim
 
 RUN groupdel users                                              \
