@@ -1,4 +1,4 @@
-FROM andarly/maven-stretch
+FROM a7fbfb888ae3/maven-stretch
 
 ENV DEBIAN_URL "http://ftp.us.debian.org/debian"
 
